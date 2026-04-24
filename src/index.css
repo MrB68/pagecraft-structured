@@ -1,0 +1,105 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Website Builder Platform — Design System
+   All colors MUST be HSL. Inspired by Linear / Webflow.
+*/
+
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 224 25% 12%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 224 25% 12%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 224 25% 12%;
+
+    --primary: 244 75% 59%;
+    --primary-foreground: 0 0% 100%;
+    --primary-glow: 250 90% 70%;
+
+    --secondary: 220 14% 96%;
+    --secondary-foreground: 224 25% 12%;
+
+    --muted: 220 14% 96%;
+    --muted-foreground: 220 9% 46%;
+
+    --accent: 244 75% 96%;
+    --accent-foreground: 244 75% 35%;
+
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 0 0% 100%;
+
+    --success: 142 71% 45%;
+    --success-foreground: 0 0% 100%;
+
+    --border: 220 13% 91%;
+    --input: 220 13% 91%;
+    --ring: 244 75% 59%;
+
+    --radius: 0.625rem;
+
+    --surface: 220 20% 98.5%;
+    --surface-foreground: 224 25% 12%;
+
+    --gradient-primary: linear-gradient(135deg, hsl(244 75% 59%), hsl(265 85% 65%));
+    --gradient-subtle: linear-gradient(180deg, hsl(220 20% 99%), hsl(220 14% 96%));
+    --shadow-sm: 0 1px 2px 0 hsl(224 25% 12% / 0.04);
+    --shadow-md: 0 4px 12px -2px hsl(224 25% 12% / 0.08);
+    --shadow-lg: 0 12px 32px -8px hsl(224 25% 12% / 0.12);
+    --shadow-glow: 0 8px 32px -8px hsl(244 75% 59% / 0.35);
+
+    --sidebar-background: 220 20% 98.5%;
+    --sidebar-foreground: 224 15% 30%;
+    --sidebar-primary: 244 75% 59%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 244 75% 96%;
+    --sidebar-accent-foreground: 244 75% 35%;
+    --sidebar-border: 220 13% 91%;
+    --sidebar-ring: 244 75% 59%;
+  }
+
+  .dark {
+    --background: 224 25% 8%;
+    --foreground: 220 14% 96%;
+    --card: 224 25% 10%;
+    --card-foreground: 220 14% 96%;
+    --popover: 224 25% 10%;
+    --popover-foreground: 220 14% 96%;
+    --primary: 250 90% 70%;
+    --primary-foreground: 224 25% 8%;
+    --secondary: 224 20% 16%;
+    --secondary-foreground: 220 14% 96%;
+    --muted: 224 20% 16%;
+    --muted-foreground: 220 9% 65%;
+    --accent: 244 50% 22%;
+    --accent-foreground: 250 90% 85%;
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 224 20% 18%;
+    --input: 224 20% 18%;
+    --ring: 250 90% 70%;
+    --surface: 224 25% 10%;
+    --sidebar-background: 224 25% 10%;
+    --sidebar-foreground: 220 14% 80%;
+    --sidebar-primary: 250 90% 70%;
+    --sidebar-primary-foreground: 224 25% 8%;
+    --sidebar-accent: 224 20% 16%;
+    --sidebar-accent-foreground: 250 90% 85%;
+    --sidebar-border: 224 20% 18%;
+    --sidebar-ring: 250 90% 70%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground antialiased;
+    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+  }
+}
