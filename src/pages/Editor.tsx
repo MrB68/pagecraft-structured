@@ -1,4 +1,4 @@
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { useBuilderStore } from "@/store/builderStore";
 import { useEditorStore } from "@/store/editorStore";
@@ -9,11 +9,13 @@ import {
   ChevronDown,
   Eye,
   ExternalLink,
+  Loader2,
   Monitor,
   Plus,
   RotateCcw,
   Save,
   Smartphone,
+  Sparkles,
   Tablet,
 } from "lucide-react";
 import {
@@ -31,6 +33,7 @@ import SectionPalette from "@/components/editor/SectionPalette";
 import EditorCanvas from "@/components/editor/EditorCanvas";
 import AnimationControls from "@/components/editor/AnimationControls";
 import { SectionType } from "@/types";
+import { generateTemplate } from "@/ai/generateTemplate";
 
 const DEVICE_WIDTHS = {
   desktop: "100%",
@@ -54,6 +57,7 @@ export default function Editor() {
     resetPageToTemplate,
     togglePublish,
     saveSiteAsTemplate,
+    createWebsiteFromTemplateObject,
   } = useBuilderStore();
 
   const {
@@ -62,6 +66,8 @@ export default function Editor() {
     device,
     setDevice,
   } = useEditorStore();
+
+  const [aiLoading, setAiLoading] = useState(false);
 
   const site = websites.find((w) => w.id === siteId);
   const page = site?.pages.find((p) => p.id === pageId) ?? site?.pages[0];
@@ -120,6 +126,33 @@ export default function Editor() {
       ...s.props,
       [fieldKey]: value,
     });
+  };
+
+  const generateAITemplate = async () => {
+    if (aiLoading) return;
+    setAiLoading(true);
+    try {
+      const template = await generateTemplate("Modern ecommerce store");
+      const newSiteId = createWebsiteFromTemplateObject(template, "AI Generated Website");
+      if (!newSiteId) {
+        toast.error("Failed to create AI website.");
+        return;
+      }
+      const newSite = websites.find((w) => w.id === newSiteId) ??
+        useBuilderStore.getState().websites.find((w) => w.id === newSiteId);
+      const firstPage = newSite?.pages[0];
+      if (newSite && firstPage) {
+        navigate(`/editor/${newSite.id}/${firstPage.id}`);
+        toast.success("AI website generated successfully!");
+      } else {
+        toast.error("AI website created but pages could not be loaded.");
+      }
+    } catch (err: any) {
+      console.error("[AI] Generation failed:", err);
+      toast.error(err?.message ?? "AI generation failed.");
+    } finally {
+      setAiLoading(false);
+    }
   };
 
   const deviceWidth = DEVICE_WIDTHS[device];
@@ -198,6 +231,21 @@ export default function Editor() {
         </div>
 
         <div className="flex items-center gap-3">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={generateAITemplate}
+            disabled={aiLoading}
+            className="gap-1.5"
+          >
+            {aiLoading ? (
+              <Loader2 className="w-3.5 h-3.5 animate-spin" />
+            ) : (
+              <Sparkles className="w-3.5 h-3.5" />
+            )}
+            {aiLoading ? "Generating..." : "Generate AI Website"}
+          </Button>
+
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="outline" size="sm">
