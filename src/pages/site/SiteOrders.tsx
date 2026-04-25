@@ -10,6 +10,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Order } from "@/types";
+import { useState } from "react";
+import NameInputDialog from "@/components/modals/NameInputDialog";
 
 const STATUS_STYLES: Record<Order["status"], string> = {
   pending: "bg-accent text-accent-foreground",
@@ -20,16 +22,20 @@ const STATUS_STYLES: Record<Order["status"], string> = {
 export default function SiteOrders() {
   const { siteId, site } = useCurrentSite();
   const { addOrder, setOrderStatus } = useBuilderStore();
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
 
   if (!site) return <SiteShell title="Orders">{null}</SiteShell>;
 
-  const handleAdd = () => {
+  const handleOpen = () => {
     if (site.customers.length === 0) {
       alert("Add a customer first.");
       return;
     }
+    setIsDialogOpen(true);
+  };
+
+  const handleSubmit = (total: string) => {
     const customer = site.customers[0];
-    const total = prompt("Order total (e.g. $99)", "$0")?.trim() || "$0";
     addOrder(siteId, { customerId: customer.id, total, status: "pending" });
   };
 
@@ -37,7 +43,7 @@ export default function SiteOrders() {
     <SiteShell
       title="Orders"
       actions={
-        <Button onClick={handleAdd}>
+        <Button onClick={handleOpen}>
           <Plus className="w-4 h-4 mr-1" /> New order
         </Button>
       }
@@ -46,7 +52,7 @@ export default function SiteOrders() {
         {site.orders.length === 0 ? (
           <div className="rounded-xl border border-dashed border-border p-12 text-center bg-card">
             <p className="text-muted-foreground mb-4">No orders yet.</p>
-            <Button onClick={handleAdd}>Create test order</Button>
+            <Button onClick={handleOpen}>Create test order</Button>
           </div>
         ) : (
           <div className="rounded-xl border border-border bg-card overflow-hidden shadow-elev-sm">
@@ -90,6 +96,15 @@ export default function SiteOrders() {
           </div>
         )}
       </div>
+
+      <NameInputDialog
+        open={isDialogOpen}
+        onOpenChange={setIsDialogOpen}
+        title="Order Total"
+        placeholder="e.g. $99"
+        defaultValue="$0"
+        onSubmit={handleSubmit}
+      />
     </SiteShell>
   );
 }

@@ -3,26 +3,45 @@ import { Button } from "@/components/ui/button";
 import { useBuilderStore } from "@/store/builderStore";
 import { Plus, Trash2 } from "lucide-react";
 import { toast } from "sonner";
+import { useState } from "react";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 
 export default function SiteMedia() {
   const { siteId, site } = useCurrentSite();
   const { addMedia, removeMedia } = useBuilderStore();
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [url, setUrl] = useState("");
+  const [name, setName] = useState("");
 
   if (!site) return <SiteShell title="Media">{null}</SiteShell>;
 
-  const handleAdd = () => {
-    const url = prompt("Image URL")?.trim();
-    if (!url) return;
-    const name = prompt("Name", "Untitled")?.trim() || "Untitled";
-    addMedia(siteId, { url, name });
+  const handleOpen = () => {
+    setUrl("");
+    setName("Untitled");
+    setIsDialogOpen(true);
+  };
+
+  const handleSubmit = () => {
+    const trimmedUrl = url.trim();
+    if (!trimmedUrl) return;
+    addMedia(siteId, { url: trimmedUrl, name: name.trim() || "Untitled" });
     toast.success("Media added");
+    setIsDialogOpen(false);
   };
 
   return (
     <SiteShell
       title="Media"
       actions={
-        <Button onClick={handleAdd}>
+        <Button onClick={handleOpen}>
           <Plus className="w-4 h-4 mr-1" /> Add image
         </Button>
       }
@@ -33,7 +52,7 @@ export default function SiteMedia() {
           <p className="text-muted-foreground text-sm mb-4">
             Paste an image URL to add it to your site library.
           </p>
-          <Button onClick={handleAdd}>Add your first image</Button>
+          <Button onClick={handleOpen}>Add your first image</Button>
         </div>
       ) : (
         <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
@@ -60,6 +79,48 @@ export default function SiteMedia() {
           ))}
         </div>
       )}
+
+      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Add Image</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="media-url">Image URL</Label>
+              <Input
+                id="media-url"
+                value={url}
+                onChange={(e) => setUrl(e.target.value)}
+                placeholder="https://example.com/image.jpg"
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && url.trim()) handleSubmit();
+                }}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="media-name">Name</Label>
+              <Input
+                id="media-name"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                placeholder="Untitled"
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && url.trim()) handleSubmit();
+                }}
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsDialogOpen(false)}>
+              Cancel
+            </Button>
+            <Button disabled={!url.trim()} onClick={handleSubmit}>
+              Add
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </SiteShell>
   );
 }

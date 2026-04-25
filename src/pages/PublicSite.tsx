@@ -1,11 +1,21 @@
-import { Link, useParams } from "react-router-dom";
+import { Link, useParams, useLocation } from "react-router-dom";
 import { useBuilderStore } from "@/store/builderStore";
 import Renderer from "@/core/Renderer";
 import { Button } from "@/components/ui/button";
+import NotFound from "./NotFound";
+import { getPagePath, normalizePath } from "@/core/utils";
+import { useEffect, useMemo } from "react";
 
 export default function PublicSite() {
-  const { siteId = "", pageId } = useParams();
+  const { siteId = "" } = useParams();
+  const { pathname } = useLocation();
   const site = useBuilderStore((s) => s.websites.find((w) => w.id === siteId));
+
+  // Extract the wildcard part after /site/:siteId/
+  const rawPath = useMemo(() => {
+    const prefix = `/site/${siteId}/`;
+    return pathname.startsWith(prefix) ? pathname.slice(prefix.length) : "";
+  }, [pathname, siteId]);
 
   if (!site) {
     return (
@@ -37,9 +47,43 @@ export default function PublicSite() {
     );
   }
 
-  const page = pageId
-    ? site.pages.find((p) => p.id === pageId) ?? site.pages[0]
-    : site.pages[0];
+  const targetNormalized = normalizePath("/" + rawPath);
+
+  // Match page: empty path → homepage (slug "home" or first page)
+  const page = useMemo(() => {
+    if (!targetNormalized || targetNormalized === "/") {
+      return site.pages.find((p) => p.slug === "home") ?? site.pages[0] ?? null;
+    }
+
+    const match = site.pages.find((p) => {
+      const pagePath = getPagePath(p, site.pages);
+      return normalizePath(pagePath) === targetNormalized;
+    });
+
+    return match ?? null;
+  }, [site.pages, targetNormalized]);
+
+  if (!page) {
+    return <NotFound />;
+  }
+
+  // SEO
+  useEffect(() => {
+    const title = page.seo?.title?.trim() || page.name || site.name || "";
+    document.title = title;
+
+    let metaDesc = document.querySelector('meta[name="description"]') as HTMLMetaElement | null;
+    if (!metaDesc) {
+      metaDesc = document.createElement("meta");
+      metaDesc.name = "description";
+      document.head.appendChild(metaDesc);
+    }
+    metaDesc.content = page.seo?.description?.trim() || "";
+
+    return () => {
+      document.title = site.name || "";
+    };
+  }, [page, site.name]);
 
   const data = {
     store: {
@@ -62,7 +106,7 @@ export default function PublicSite() {
               {site.pages.map((p) => (
                 <Link
                   key={p.id}
-                  to={`/site/${site.id}/${p.id}`}
+                  to={`/site/${site.id}${getPagePath(p, site.pages)}`}
                   className={`px-3 py-1.5 rounded-md text-sm transition-colors ${
                     p.id === page?.id
                       ? "bg-accent text-accent-foreground font-medium"
@@ -76,7 +120,8 @@ export default function PublicSite() {
           </div>
         </nav>
       )}
-      {page && <Renderer sections={page.sections} data={data} />}
+      <Renderer sections={page.sections} data={data} />
     </div>
   );
 }
+

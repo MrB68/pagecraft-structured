@@ -3,6 +3,7 @@ import { Link, useNavigate, useParams } from "react-router-dom";
 import { useBuilderStore } from "@/store/builderStore";
 import { useEditorStore } from "@/store/editorStore";
 import { SECTION_MAP } from "@/core/sectionRegistry";
+import { getPagePath } from "@/core/utils";
 import { Button } from "@/components/ui/button";
 import {
   ArrowLeft,
@@ -34,6 +35,7 @@ import EditorCanvas from "@/components/editor/EditorCanvas";
 import AnimationControls from "@/components/editor/AnimationControls";
 import { SectionType } from "@/types";
 import { generateTemplate } from "@/ai/generateTemplate";
+import NameInputDialog from "@/components/modals/NameInputDialog";
 
 const DEVICE_WIDTHS = {
   desktop: "100%",
@@ -68,6 +70,8 @@ export default function Editor() {
   } = useEditorStore();
 
   const [aiLoading, setAiLoading] = useState(false);
+  const [isAddPageOpen, setIsAddPageOpen] = useState(false);
+  const [isSaveTemplateOpen, setIsSaveTemplateOpen] = useState(false);
 
   const site = websites.find((w) => w.id === siteId);
   const page = site?.pages.find((p) => p.id === pageId) ?? site?.pages[0];
@@ -157,6 +161,8 @@ export default function Editor() {
 
   const deviceWidth = DEVICE_WIDTHS[device];
 
+  const previewPath = page ? getPagePath(page, site.pages) : "";
+
   return (
     <div className="h-screen flex flex-col bg-surface">
       {/* Top bar */}
@@ -186,12 +192,7 @@ export default function Editor() {
               ))}
               <DropdownMenuSeparator />
               <DropdownMenuItem
-                onClick={() => {
-                  const name = prompt("Page name (e.g. Pricing)")?.trim();
-                  if (!name) return;
-                  addPage(site.id, name);
-                  toast.success("Page added");
-                }}
+                onClick={() => setIsAddPageOpen(true)}
               >
                 <Plus className="w-3.5 h-3.5 mr-1" /> Add page
               </DropdownMenuItem>
@@ -255,12 +256,7 @@ export default function Editor() {
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
               <DropdownMenuItem
-                onClick={() => {
-                  const name = prompt("Template name", `${site.name} template`)?.trim();
-                  if (!name) return;
-                  saveSiteAsTemplate(site.id, name);
-                  toast.success("Saved as template");
-                }}
+                onClick={() => setIsSaveTemplateOpen(true)}
               >
                 <Save className="w-3.5 h-3.5 mr-2" /> Save as template
               </DropdownMenuItem>
@@ -290,7 +286,7 @@ export default function Editor() {
             </span>
           </div>
           <Button asChild variant="outline" size="sm">
-            <Link to={`/site/${site.id}/${page.id}`} target="_blank">
+            <Link to={`/site/${site.id}${previewPath}`} target="_blank">
               <Eye className="w-4 h-4 mr-1" /> Preview
             </Link>
           </Button>
@@ -398,7 +394,7 @@ export default function Editor() {
 
               {site.published && (
                 <a
-                  href={`/site/${site.id}/${page.id}`}
+                  href={`/site/${site.id}${previewPath}`}
                   target="_blank"
                   rel="noreferrer"
                   className="text-xs text-primary hover:underline inline-flex items-center gap-1"
@@ -415,6 +411,30 @@ export default function Editor() {
           )}
         </aside>
       </div>
+
+      <NameInputDialog
+        open={isAddPageOpen}
+        onOpenChange={setIsAddPageOpen}
+        title="Add Page"
+        placeholder="Page name (e.g. Pricing)"
+        onSubmit={(value) => {
+          addPage(site.id, value);
+          toast.success("Page added");
+        }}
+      />
+
+      <NameInputDialog
+        open={isSaveTemplateOpen}
+        onOpenChange={setIsSaveTemplateOpen}
+        title="Save as Template"
+        placeholder="Template name"
+        defaultValue={`${site.name} template`}
+        onSubmit={(value) => {
+          saveSiteAsTemplate(site.id, value);
+          toast.success("Saved as template");
+        }}
+      />
     </div>
   );
 }
+

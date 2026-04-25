@@ -1,8 +1,11 @@
 import AppLayout from "@/components/AppLayout";
 import { Button } from "@/components/ui/button";
 import { useBuilderStore } from "@/store/builderStore";
+import NameInputDialog from "@/components/modals/NameInputDialog";
 import { TEMPLATES as BUILTIN_TEMPLATES } from "@/templates";
+import { Template } from "@/types";
 import { useNavigate } from "react-router-dom";
+import { useState } from "react";
 import { toast } from "sonner";
 import Renderer from "@/core/Renderer";
 import { Trash2 } from "lucide-react";
@@ -14,15 +17,32 @@ export default function Templates() {
   const customTemplates = useBuilderStore((s) => s.customTemplates);
   const deleteCustomTemplate = useBuilderStore((s) => s.deleteCustomTemplate);
 
-  const all = [...BUILTIN_TEMPLATES, ...customTemplates];
+  const [search, setSearch] = useState("");
+  const [loadingId, setLoadingId] = useState<string | null>(null);
+  const [selectedTemplate, setSelectedTemplate] = useState<Template | null>(null);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
 
-  const handleCreate = (templateId: string, defaultName: string) => {
-    const name = prompt("Name your website", defaultName)?.trim();
-    if (!name) return;
-    const id = create(templateId, name);
-    if (id) {
-      toast.success("Website created");
-      navigate(`/sites/${id}/pages`);
+  const all = [...BUILTIN_TEMPLATES, ...customTemplates].filter((tpl) =>
+    tpl.name.toLowerCase().includes(search.toLowerCase())
+  );
+
+  const handleCreate = async (templateId: string, name: string) => {
+    if (!name.trim()) return;
+
+    try {
+      setLoadingId(templateId);
+      const id = create(templateId, name.trim());
+
+      if (id) {
+        toast.success("Website created");
+        navigate(`/editor/${id}`);
+      } else {
+        toast.error("Failed to create website");
+      }
+    } catch (e) {
+      toast.error("Something went wrong");
+    } finally {
+      setLoadingId(null);
     }
   };
 
@@ -32,6 +52,12 @@ export default function Templates() {
         <p className="text-muted-foreground mb-6">
           Pick a template to start. You can edit every section after.
         </p>
+        <input
+          placeholder="Search templates..."
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          className="mb-6 w-full px-3 py-2 border rounded-md bg-background text-sm"
+        />
         <div className="grid md:grid-cols-2 gap-6">
           {all.map((tpl) => {
             const isCustom = tpl.category === "Custom";
@@ -64,8 +90,15 @@ export default function Templates() {
                     ))}
                   </div>
                   <div className="flex gap-2">
-                    <Button className="flex-1" onClick={() => handleCreate(tpl.id, tpl.name)}>
-                      Use template
+                    <Button
+                      className="flex-1"
+                      disabled={loadingId === tpl.id}
+                      onClick={() => {
+                        setSelectedTemplate(tpl);
+                        setIsDialogOpen(true);
+                      }}
+                    >
+                      {loadingId === tpl.id ? "Creating..." : "Use template"}
                     </Button>
                     {isCustom && (
                       <Button
@@ -88,6 +121,21 @@ export default function Templates() {
           })}
         </div>
       </div>
+
+      <NameInputDialog
+        open={isDialogOpen}
+        onOpenChange={(open) => {
+          setIsDialogOpen(open);
+          if (!open) setSelectedTemplate(null);
+        }}
+        title="Create Website"
+        placeholder="Website name"
+        defaultValue={selectedTemplate?.name ?? ""}
+        onSubmit={(value) => {
+          if (!selectedTemplate) return;
+          handleCreate(selectedTemplate.id, value);
+        }}
+      />
     </AppLayout>
   );
 }

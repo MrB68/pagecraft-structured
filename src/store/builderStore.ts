@@ -27,7 +27,7 @@ interface BuilderState {
   renameWebsite: (id: string, name: string) => void;
   setDomain: (id: string, domain: string) => void;
 
-  addPage: (siteId: string, name: string) => void;
+  addPage: (siteId: string, name: string, parentId?: string | null) => void;
   deletePage: (siteId: string, pageId: string) => void;
   resetPageToTemplate: (siteId: string, pageId: string) => void;
 
@@ -82,6 +82,19 @@ const updateSite = (
   fn: (w: Website) => Website
 ) => ({ websites: state.websites.map((w) => (w.id === siteId ? fn(w) : w)) });
 
+/** Ensure slug is unique among siblings (same parent). */
+function uniqueSlug(slug: string, parentId: string | null | undefined, existingPages: { slug: string; parentId?: string | null }[]): string {
+  const siblings = existingPages.filter((p) => p.parentId === parentId || (!p.parentId && !parentId));
+  const base = slug || "page";
+  let result = base;
+  let counter = 1;
+  while (siblings.some((p) => p.slug === result)) {
+    result = `${base}-${counter}`;
+    counter++;
+  }
+  return result;
+}
+
 export const useBuilderStore = create<BuilderState>()(
   persist(
     (set, get) => ({
@@ -102,6 +115,8 @@ export const useBuilderStore = create<BuilderState>()(
           pages: clone(tpl.pages).map((p) => ({
             ...p,
             id: uid(),
+            parentId: p.parentId ?? null,
+            seo: p.seo ?? {},
             sections: p.sections.map((s) => ({ ...s, id: uid() })),
           })),
           allowedSections: clone(tpl.allowedSections),
@@ -127,6 +142,8 @@ export const useBuilderStore = create<BuilderState>()(
           pages: clone(src.pages).map((p) => ({
             ...p,
             id: uid(),
+            parentId: p.parentId ?? null,
+            seo: p.seo ?? {},
             sections: p.sections.map((s) => ({ ...s, id: uid() })),
           })),
           allowedSections: clone(src.allowedSections),
@@ -144,23 +161,29 @@ export const useBuilderStore = create<BuilderState>()(
       setDomain: (id, domain) =>
         set((state) => updateSite(state, id, (w) => ({ ...w, domain }))),
 
-      addPage: (siteId, name) =>
+      addPage: (siteId, name, parentId = null) =>
         set((state) =>
-          updateSite(state, siteId, (w) => ({
-            ...w,
-            pages: [
-              ...w.pages,
-              {
-                id: uid(),
-                name,
-                slug: slugify(name),
-                sections: [
-                  { id: uid(), type: "hero", props: clone(SECTION_MAP.hero.defaults) },
-                  { id: uid(), type: "footer", props: clone(SECTION_MAP.footer.defaults) },
-                ],
-              },
-            ],
-          }))
+          updateSite(state, siteId, (w) => {
+            const baseSlug = slugify(name);
+            const finalSlug = uniqueSlug(baseSlug, parentId, w.pages);
+            return {
+              ...w,
+              pages: [
+                ...w.pages,
+                {
+                  id: uid(),
+                  name,
+                  slug: finalSlug,
+                  parentId,
+                  seo: {},
+                  sections: [
+                    { id: uid(), type: "hero", props: clone(SECTION_MAP.hero.defaults) },
+                    { id: uid(), type: "footer", props: clone(SECTION_MAP.footer.defaults) },
+                  ],
+                },
+              ],
+            };
+          })
         ),
 
       deletePage: (siteId, pageId) =>
@@ -319,6 +342,8 @@ export const useBuilderStore = create<BuilderState>()(
           pages: clone(site.pages).map((p) => ({
             ...p,
             id: `p-${uid()}`,
+            parentId: p.parentId ?? null,
+            seo: p.seo ?? {},
             sections: p.sections.map((s) => ({ ...s, id: `s-${uid()}` })),
           })),
           allowedSections: Array.from(usedTypes) as Section["type"][],
@@ -347,6 +372,8 @@ export const useBuilderStore = create<BuilderState>()(
           pages: clone(template.pages).map((p) => ({
             ...p,
             id: uid(),
+            parentId: p.parentId ?? null,
+            seo: p.seo ?? {},
             sections: p.sections.map((s) => ({ ...s, id: uid() })),
           })),
           allowedSections: Array.from(usedTypes) as Section["type"][],
@@ -511,20 +538,44 @@ export const useBuilderStore = create<BuilderState>()(
     }),
     {
       name: "sitewise-builder-v2",
-      version: 3,
+      version: 4,
       migrate: (persisted: any) => {
         if (!persisted) return persisted;
         if (Array.isArray(persisted.websites)) {
-          persisted.websites = persisted.websites.map((w: any) => ({
-            ...emptyCommerce(),
-            ...w,
-          }));
+          persisted.websites = persisted.websites.map((w: any) => {
+            const migratedPages = Array.isArray(w.pages)
+              ? w.pages.map((p: any) => ({
+                  ...p,
+                  parentId: p.parentId ?? null,
+                  seo: p.seo ?? {},
+                }))
+              : [];
+            return {
+              ...emptyCommerce(),
+              ...w,
+              pages: migratedPages,
+            };
+          });
         }
         if (!Array.isArray(persisted.customTemplates)) {
           persisted.customTemplates = [];
+        }
+        // Also migrate template pages
+        if (Array.isArray(persisted.customTemplates)) {
+          persisted.customTemplates = persisted.customTemplates.map((t: any) => ({
+            ...t,
+            pages: Array.isArray(t.pages)
+              ? t.pages.map((p: any) => ({
+                  ...p,
+                  parentId: p.parentId ?? null,
+                  seo: p.seo ?? {},
+                }))
+              : [],
+          }));
         }
         return persisted;
       },
     }
   )
 );
+

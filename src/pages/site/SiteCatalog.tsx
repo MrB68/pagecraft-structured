@@ -2,6 +2,8 @@ import SiteShell, { useCurrentSite } from "@/components/SiteShell";
 import { Button } from "@/components/ui/button";
 import { useBuilderStore } from "@/store/builderStore";
 import { Plus, Trash2 } from "lucide-react";
+import { useState } from "react";
+import NameInputDialog from "@/components/modals/NameInputDialog";
 
 interface SimpleListProps {
   title: string;
@@ -13,16 +15,12 @@ interface SimpleListProps {
 }
 
 function SimpleList({ title, emptyLabel, promptLabel, data, onAdd, onRemove }: SimpleListProps) {
-  const handleAdd = () => {
-    const name = prompt(promptLabel)?.trim();
-    if (!name) return;
-    onAdd(name);
-  };
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
   return (
     <SiteShell
       title={title}
       actions={
-        <Button onClick={handleAdd}>
+        <Button onClick={() => setIsDialogOpen(true)}>
           <Plus className="w-4 h-4 mr-1" /> Add {title.toLowerCase()}
         </Button>
       }
@@ -31,7 +29,7 @@ function SimpleList({ title, emptyLabel, promptLabel, data, onAdd, onRemove }: S
         {data.length === 0 ? (
           <div className="rounded-xl border border-dashed border-border p-12 text-center bg-card">
             <p className="text-muted-foreground mb-4">{emptyLabel}</p>
-            <Button onClick={handleAdd}>Add now</Button>
+            <Button onClick={() => setIsDialogOpen(true)}>Add now</Button>
           </div>
         ) : (
           <ul className="rounded-xl border border-border bg-card divide-y divide-border shadow-elev-sm overflow-hidden">
@@ -49,6 +47,14 @@ function SimpleList({ title, emptyLabel, promptLabel, data, onAdd, onRemove }: S
           </ul>
         )}
       </div>
+
+      <NameInputDialog
+        open={isDialogOpen}
+        onOpenChange={setIsDialogOpen}
+        title={promptLabel}
+        placeholder={promptLabel}
+        onSubmit={(value) => onAdd(value)}
+      />
     </SiteShell>
   );
 }

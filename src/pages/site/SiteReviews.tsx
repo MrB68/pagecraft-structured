@@ -2,30 +2,63 @@ import SiteShell, { useCurrentSite } from "@/components/SiteShell";
 import { Button } from "@/components/ui/button";
 import { useBuilderStore } from "@/store/builderStore";
 import { Plus, Star, Trash2 } from "lucide-react";
+import { useState } from "react";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 export default function SiteReviews() {
   const { siteId, site } = useCurrentSite();
   const { upsertReview, removeReview } = useBuilderStore();
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [author, setAuthor] = useState("");
+  const [body, setBody] = useState("");
+  const [rating, setRating] = useState("5");
 
   if (!site) return <SiteShell title="Reviews">{null}</SiteShell>;
 
-  const handleAdd = () => {
+  const handleOpen = () => {
     if (site.products.length === 0) {
       alert("Add a product first.");
       return;
     }
-    const author = prompt("Reviewer name")?.trim();
-    if (!author) return;
-    const body = prompt("Review")?.trim() || "";
-    const rating = Math.max(1, Math.min(5, Number(prompt("Rating 1-5", "5") ?? 5)));
-    upsertReview(siteId, { productId: site.products[0].id, author, body, rating });
+    setAuthor("");
+    setBody("");
+    setRating("5");
+    setIsDialogOpen(true);
+  };
+
+  const handleSubmit = () => {
+    const trimmedAuthor = author.trim();
+    if (!trimmedAuthor) return;
+    upsertReview(siteId, {
+      productId: site.products[0].id,
+      author: trimmedAuthor,
+      body: body.trim(),
+      rating: Math.max(1, Math.min(5, Number(rating) || 5)),
+    });
+    setIsDialogOpen(false);
   };
 
   return (
     <SiteShell
       title="Reviews"
       actions={
-        <Button onClick={handleAdd}>
+        <Button onClick={handleOpen}>
           <Plus className="w-4 h-4 mr-1" /> New review
         </Button>
       }
@@ -34,7 +67,7 @@ export default function SiteReviews() {
         {site.reviews.length === 0 ? (
           <div className="rounded-xl border border-dashed border-border p-12 text-center bg-card">
             <p className="text-muted-foreground mb-4">No reviews yet.</p>
-            <Button onClick={handleAdd}>Add review</Button>
+            <Button onClick={handleOpen}>Add review</Button>
           </div>
         ) : (
           site.reviews.map((r) => {
@@ -64,6 +97,61 @@ export default function SiteReviews() {
           })
         )}
       </div>
+
+      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Add Review</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="review-author">Reviewer name</Label>
+              <Input
+                id="review-author"
+                value={author}
+                onChange={(e) => setAuthor(e.target.value)}
+                placeholder="e.g. Jane Doe"
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && author.trim()) handleSubmit();
+                }}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="review-body">Review</Label>
+              <Textarea
+                id="review-body"
+                value={body}
+                onChange={(e) => setBody(e.target.value)}
+                placeholder="Write your review..."
+                rows={3}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="review-rating">Rating</Label>
+              <Select value={rating} onValueChange={setRating}>
+                <SelectTrigger id="review-rating" className="w-[120px]">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="1">1 — Poor</SelectItem>
+                  <SelectItem value="2">2 — Fair</SelectItem>
+                  <SelectItem value="3">3 — Good</SelectItem>
+                  <SelectItem value="4">4 — Very Good</SelectItem>
+                  <SelectItem value="5">5 — Excellent</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsDialogOpen(false)}>
+              Cancel
+            </Button>
+            <Button disabled={!author.trim()} onClick={handleSubmit}>
+              Add
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </SiteShell>
   );
 }

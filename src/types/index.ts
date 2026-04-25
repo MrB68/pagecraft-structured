@@ -25,6 +25,11 @@ export interface Page {
   id: string;
   name: string;
   slug: string;
+  parentId?: string | null;
+  seo?: {
+    title?: string;
+    description?: string;
+  };
   sections: Section[];
 }
 
@@ -99,3 +104,4 @@ export interface Template {
   pages: Page[];
   allowedSections: SectionType[];
 }
+

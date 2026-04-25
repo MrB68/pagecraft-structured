@@ -13,6 +13,7 @@ import {
   ShoppingBag,
   ShoppingCart,
   Sparkles,
+  Store,
   Star,
   Tag,
   Users,
@@ -60,6 +61,7 @@ const commerceItems = (siteId: string): Item[] => [
   { title: "Categories", url: `/sites/${siteId}/categories`, icon: Folder },
   { title: "Brands", url: `/sites/${siteId}/brands`, icon: Tag },
   { title: "Orders", url: `/sites/${siteId}/orders`, icon: ShoppingCart },
+  { title: "POS", url: `/sites/${siteId}/pos`, icon: Store },
   { title: "Customers", url: `/sites/${siteId}/customers`, icon: Users },
   { title: "Reviews", url: `/sites/${siteId}/reviews`, icon: Star },
 ];

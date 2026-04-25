@@ -20,6 +20,7 @@ import SiteReviews from "./pages/site/SiteReviews.tsx";
 import SiteAnalytics from "./pages/site/SiteAnalytics.tsx";
 import SiteSettings from "./pages/site/SiteSettings.tsx";
 import SiteDomain from "./pages/site/SiteDomain.tsx";
+import POS from "./pages/POS.tsx";
 
 const queryClient = new QueryClient();
 
@@ -53,10 +54,10 @@ const App = () => (
           <Route path="/sites/:siteId/analytics/stats" element={<SiteAnalytics />} />
           <Route path="/sites/:siteId/settings" element={<SiteSettings />} />
           <Route path="/sites/:siteId/domain" element={<SiteDomain />} />
+          <Route path="/sites/:siteId/pos" element={<POS />} />
 
-          {/* Public */}
-          <Route path="/site/:siteId" element={<PublicSite />} />
-          <Route path="/site/:siteId/:pageId" element={<PublicSite />} />
+          {/* Public — wildcard for nested page routing */}
+          <Route path="/site/:siteId/*" element={<PublicSite />} />
 
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
@@ -67,3 +68,4 @@ const App = () => (
 );
 
 export default App;
+
