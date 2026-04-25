@@ -41,6 +41,17 @@ export default function PublicSite() {
     ? site.pages.find((p) => p.id === pageId) ?? site.pages[0]
     : site.pages[0];
 
+  const data = {
+    store: {
+      name: site.name,
+      brand: site.name,
+    },
+    products: site.products,
+    categories: site.categories,
+    collections: site.categories,
+    brands: site.brands,
+  };
+
   return (
     <div className="min-h-screen bg-background">
       {site.pages.length > 1 && (
@@ -65,7 +76,7 @@ export default function PublicSite() {
           </div>
         </nav>
       )}
-      {page && <Renderer sections={page.sections} />}
+      {page && <Renderer sections={page.sections} data={data} />}
     </div>
   );
 }

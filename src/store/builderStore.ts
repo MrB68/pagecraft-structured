@@ -42,6 +42,8 @@ interface BuilderState {
   deleteCustomTemplate: (id: string) => void;
   getAllTemplates: () => Template[];
 
+  createWebsiteFromTemplateObject: (template: Template, name: string) => string;
+
   addMedia: (siteId: string, item: Omit<MediaItem, "id" | "addedAt">) => void;
   removeMedia: (siteId: string, id: string) => void;
 
@@ -331,6 +333,28 @@ export const useBuilderStore = create<BuilderState>()(
         })),
 
       getAllTemplates: () => [...BUILTIN_TEMPLATES, ...get().customTemplates],
+
+      createWebsiteFromTemplateObject: (template, name) => {
+        const id = uid();
+        const usedTypes = new Set<string>();
+        template.pages.forEach((p) => p.sections.forEach((s) => usedTypes.add(s.type)));
+        const site: Website = {
+          id,
+          name,
+          templateId: template.id,
+          published: false,
+          createdAt: Date.now(),
+          pages: clone(template.pages).map((p) => ({
+            ...p,
+            id: uid(),
+            sections: p.sections.map((s) => ({ ...s, id: uid() })),
+          })),
+          allowedSections: Array.from(usedTypes) as Section["type"][],
+          ...emptyCommerce(),
+        };
+        set((state) => ({ websites: [site, ...state.websites] }));
+        return id;
+      },
 
       // Media
       addMedia: (siteId, item) =>

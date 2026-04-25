@@ -1,11 +1,13 @@
-import { Section } from "@/types";
+import { Section, RuntimeData } from "@/types";
 import { SECTION_MAP } from "./sectionRegistry";
+import { resolveValue } from "./dataResolver";
 
 interface RendererProps {
   sections: Section[];
+  data?: RuntimeData;
 }
 
-export default function Renderer({ sections }: RendererProps) {
+export default function Renderer({ sections, data }: RendererProps) {
   return (
     <div className="w-full">
       {sections.map((section) => {
@@ -21,7 +23,8 @@ export default function Renderer({ sections }: RendererProps) {
           );
         }
         const Component = meta.component;
-        return <Component key={section.id} {...section.props} />;
+        const resolvedProps = data ? resolveValue(section.props, data) : section.props;
+        return <Component key={section.id} {...resolvedProps} />;
       })}
     </div>
   );

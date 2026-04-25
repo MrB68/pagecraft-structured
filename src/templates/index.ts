@@ -17,7 +17,7 @@ export const TEMPLATES: Template[] = [
             id: "clo-nav",
             type: "navbar",
             props: {
-              brand: "clo",
+              brand: "{{store.name}}",
               sticky: true,
               showIcons: true,
               animate: true,

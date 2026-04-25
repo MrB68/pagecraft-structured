@@ -1,42 +1,22 @@
-# TODO: Template-Unique Sections
+# AI Template Generator — Implementation TODO
 
-## Task
-Make the section palette and template preview show only sections that are unique/available to each template.
+## Steps
 
-## Plan
-
-### 1. ✅ Update Types
-- **File:** `src/types/index.ts`
-- Add `allowedSections: SectionType[]` to `Template` interface
-- Add `allowedSections?: SectionType[]` to `Website` interface (so it persists even if template is deleted)
-
-### 2. ✅ Define Allowed Sections per Template
-- **File:** `src/templates/index.ts`
-- Add `allowedSections` array to each built-in template:
-  - `tpl-clo`: `["navbar", "clo-hero", "philosophy", "clo-product-grid", "collections", "value-grid", "newsletter", "clo-footer"]`
-  - `tpl-clothing`: `["hero", "product-grid", "cta", "about", "contact", "footer"]`
-  - `tpl-business`: `["hero", "features", "cta", "about", "contact", "footer"]`
-
-### 3. ✅ Update Builder Store
-- **File:** `src/store/builderStore.ts`
-- `createWebsiteFromTemplate`: copy `tpl.allowedSections` into the new `Website`
-- `duplicateWebsite`: copy `src.allowedSections` into the duplicated site
-- `saveSiteAsTemplate`: derive `allowedSections` from all unique section types used in the site's pages
-
-### 4. ✅ Update Section Palette
-- **File:** `src/components/editor/SectionPalette.tsx`
-- Add optional `allowedTypes?: SectionType[]` prop
-- Filter `SECTION_TYPES` by `allowedTypes` when provided; otherwise show all
-
-### 5. ✅ Update Editor Page
-- **File:** `src/pages/Editor.tsx`
-- Compute `allowedSectionTypes` for the current site
-- Pass `allowedTypes` prop to `SectionPalette` component
-- If no `allowedSections` found (legacy site), fall back to all section types
-
-### 6. ✅ Update Templates Page
-- **File:** `src/pages/Templates.tsx`
-- For each template card, display the available/unique section types as small badge tags under the description
-
-## Status: COMPLETE ✅
+- [x] Step 1: Create `src/ai/generateTemplate.ts`
+  - [x] Define types, mappings, and constants
+  - [x] Implement `generateLayout(prompt)` with OpenAI fetch
+  - [x] Implement `convertToTemplate(layout)` with normalization + defaults merge
+  - [x] Implement `validateAndFix(template)` with Zod + max 2 retries
+  - [x] Implement `generateTemplate(prompt)` orchestrator
+- [x] Step 2: Update `src/store/builderStore.ts`
+  - [x] Add `createWebsiteFromTemplateObject(template, name)` method
+- [x] Step 3: Update `src/pages/Editor.tsx`
+  - [x] Add imports for AI service + Sparkles icon
+  - [x] Add `generateAITemplate()` async handler
+  - [x] Add "Generate AI Website" button with loading state
+  - [x] Handle navigation safely (check pages exist)
+- [x] Step 4: Build & verify
+  - [x] Run TypeScript check — **PASS** (zero errors)
+  - [x] Vite production build — **PASS** (742KB bundle)
+  - [x] Test suite — **PASS** (1/1 tests)
 

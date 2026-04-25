@@ -78,6 +78,19 @@ export interface Website {
   allowedSections?: SectionType[];
 }
 
+export interface RuntimeData {
+  store?: {
+    name?: string;
+    tagline?: string;
+    brand?: string;
+  };
+  products?: Record<string, any>[];
+  categories?: Record<string, any>[];
+  collections?: Record<string, any>[];
+  brands?: Record<string, any>[];
+  [key: string]: any;
+}
+
 export interface Template {
   id: string;
   name: string;
