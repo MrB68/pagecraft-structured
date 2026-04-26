@@ -88,6 +88,8 @@ export const useBuilderStore = create<BuilderState>()(
     (set, get) => ({
       websites: [],
       customTemplates: [],
+      userPlan: "free",
+      setUserPlan: (plan) => set({ userPlan: plan }),
 
       createWebsiteFromTemplate: (templateId, name) => {
         const all = [...BUILTIN_TEMPLATES, ...get().customTemplates];
