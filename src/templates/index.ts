@@ -1,6 +1,7 @@
 import { Template } from "@/types";
+import { GENERATED_TEMPLATES } from "./generated";
 
-export const TEMPLATES: Template[] = [
+const BASE_TEMPLATES: Template[] = [
   {
     id: "tpl-clo",
     name: "CLO Streetwear",
@@ -295,3 +296,6 @@ export const TEMPLATES: Template[] = [
     ],
   },
 ];
+
+export const TEMPLATES: Template[] = [...BASE_TEMPLATES, ...GENERATED_TEMPLATES];
+
