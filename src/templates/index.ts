@@ -296,3 +296,6 @@ const BASE_TEMPLATES: Template[] = [
     ],
   },
 ];
+
+export const TEMPLATES: Template[] = [...BASE_TEMPLATES, ...GENERATED_TEMPLATES];
+
