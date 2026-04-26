@@ -19,7 +19,8 @@ import type { Template } from "@/types";
 interface BuilderState {
   websites: Website[];
   customTemplates: Template[];
-
+  userPlan: "free" | "pro";
+  setUserPlan: (plan: "free" | "pro") => void;
   createWebsiteFromTemplate: (templateId: string, name: string) => string;
   deleteWebsite: (id: string) => void;
   duplicateWebsite: (id: string) => string;
@@ -87,6 +88,8 @@ export const useBuilderStore = create<BuilderState>()(
     (set, get) => ({
       websites: [],
       customTemplates: [],
+      userPlan: "free",
+      setUserPlan: (plan) => set({ userPlan: plan }),
 
       createWebsiteFromTemplate: (templateId, name) => {
         const all = [...BUILTIN_TEMPLATES, ...get().customTemplates];

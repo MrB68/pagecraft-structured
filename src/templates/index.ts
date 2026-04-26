@@ -297,5 +297,18 @@ const BASE_TEMPLATES: Template[] = [
   },
 ];
 
-export const TEMPLATES: Template[] = [...BASE_TEMPLATES, ...GENERATED_TEMPLATES];
+// Mark a curated subset as premium. Heuristic: every 3rd generated template
+// plus the showcase CLO template are premium. Stable & deterministic.
+const PREMIUM_BUILTIN_IDS = new Set<string>(["tpl-clo"]);
+
+const withMeta = (t: Template, i: number, base: number): Template => ({
+  ...t,
+  isPremium: t.isPremium ?? (PREMIUM_BUILTIN_IDS.has(t.id) || (base + i) % 3 === 0),
+  createdAt: t.createdAt ?? Date.now() - (base + i) * 1000 * 60 * 60,
+});
+
+export const TEMPLATES: Template[] = [
+  ...BASE_TEMPLATES.map((t, i) => withMeta(t, i, 0)),
+  ...GENERATED_TEMPLATES.map((t, i) => withMeta(t, i, BASE_TEMPLATES.length)),
+];
 
