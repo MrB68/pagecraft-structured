@@ -98,4 +98,8 @@ export interface Template {
   category: string;
   pages: Page[];
   allowedSections: SectionType[];
+  isPremium?: boolean;
+  createdAt?: number;
 }
+
+export type UserPlan = "free" | "pro";
