@@ -19,7 +19,8 @@ import type { Template } from "@/types";
 interface BuilderState {
   websites: Website[];
   customTemplates: Template[];
-
+  userPlan: "free" | "pro";
+  setUserPlan: (plan: "free" | "pro") => void;
   createWebsiteFromTemplate: (templateId: string, name: string) => string;
   deleteWebsite: (id: string) => void;
   duplicateWebsite: (id: string) => string;
