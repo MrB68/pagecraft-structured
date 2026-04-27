@@ -5,7 +5,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider } from "@/context/AuthContext";
 import ProtectedRoute from "@/components/ProtectedRoute";
-import Index from "./pages/Index.tsx";
+import Landing from "./pages/Landing.tsx";
 import NotFound from "./pages/NotFound.tsx";
 import Websites from "./pages/Websites.tsx";
 import Templates from "./pages/Templates.tsx";
@@ -51,7 +51,7 @@ const App = () => (
             />
 
             {/* Main */}
-            <Route path="/" element={<Index />} />
+            <Route path="/" element={<Landing />} />
             <Route path="/websites" element={<Websites />} />
             <Route path="/templates" element={<Templates />} />
             <Route path="/settings" element={<Settings />} />
