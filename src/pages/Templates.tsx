@@ -197,6 +197,7 @@ export default function Templates() {
             templates={premiumTemplates}
             isPro={isPro}
             onUse={handleUse}
+            onPreview={setPreviewTpl}
           />
         )}
 
@@ -309,6 +310,7 @@ export default function Templates() {
                   tpl={tpl}
                   isPro={isPro}
                   onUse={() => handleUse(tpl)}
+                  onPreview={() => setPreviewTpl(tpl)}
                   onDelete={
                     tpl.category === "Custom"
                       ? () => {
