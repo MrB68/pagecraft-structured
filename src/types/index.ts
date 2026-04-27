@@ -59,6 +59,8 @@ export interface Order {
 export interface Customer { id: string; name: string; email: string; createdAt: number }
 export interface Review { id: string; productId: string; author: string; rating: number; body: string }
 
+export type SiteRole = "owner" | "admin" | "editor" | "viewer";
+
 export interface Website {
   id: string;
   name: string;
@@ -76,6 +78,8 @@ export interface Website {
   customers: Customer[];
   reviews: Review[];
   allowedSections?: SectionType[];
+  /** Current user's role for this site. Defaults to "owner" until auth is wired. */
+  role?: SiteRole;
 }
 
 export interface RuntimeData {
