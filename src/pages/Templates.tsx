@@ -381,10 +381,12 @@ function PremiumCarousel({
   templates,
   isPro,
   onUse,
+  onPreview,
 }: {
   templates: Template[];
   isPro: boolean;
   onUse: (t: Template) => void;
+  onPreview: (t: Template) => void;
 }) {
   const ref = useRef<HTMLDivElement>(null);
 
@@ -395,7 +397,7 @@ function PremiumCarousel({
   };
 
   return (
-    <section className="space-y-3">
+    <section className="space-y-3 animate-fade-in">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <Crown className="w-5 h-5 text-amber-500" />
@@ -423,7 +425,12 @@ function PremiumCarousel({
             key={tpl.id}
             className="snap-start shrink-0 w-[300px] md:w-[340px] group"
           >
-            <PremiumCard tpl={tpl} isPro={isPro} onUse={() => onUse(tpl)} />
+            <PremiumCard
+              tpl={tpl}
+              isPro={isPro}
+              onUse={() => onUse(tpl)}
+              onPreview={() => onPreview(tpl)}
+            />
           </div>
         ))}
       </div>
@@ -435,29 +442,42 @@ function PremiumCard({
   tpl,
   isPro,
   onUse,
+  onPreview,
 }: {
   tpl: Template;
   isPro: boolean;
   onUse: () => void;
+  onPreview: () => void;
 }) {
   return (
     <div className="rounded-2xl border border-amber-500/30 bg-card overflow-hidden shadow-elev-sm hover:shadow-elev-md transition-all duration-300 hover:-translate-y-0.5 relative">
       <div className="absolute inset-0 bg-gradient-to-br from-amber-500/5 to-transparent pointer-events-none" />
-      <div className="aspect-[16/10] bg-surface border-b border-border overflow-hidden relative">
+      <button
+        type="button"
+        onClick={onPreview}
+        aria-label={`Preview ${tpl.name}`}
+        className="aspect-[16/10] w-full bg-surface border-b border-border overflow-hidden relative block text-left"
+      >
         <div className="absolute inset-0 origin-top-left scale-[0.32] w-[312%] h-[312%] pointer-events-none select-none transition-transform duration-500 group-hover:scale-[0.34]">
           <Renderer sections={tpl.pages[0].sections.slice(0, 2)} />
         </div>
         <div className="absolute top-2 left-2 flex items-center gap-1 text-[10px] font-bold px-2 py-1 rounded-full bg-gradient-to-r from-amber-500 to-amber-600 text-white shadow-sm">
           <Crown className="w-3 h-3" /> PREMIUM
         </div>
-        {!isPro && (
-          <div className="absolute inset-0 flex items-center justify-center bg-background/40 backdrop-blur-[1px] opacity-0 group-hover:opacity-100 transition-opacity">
-            <div className="bg-background/90 rounded-full p-3 shadow-lg">
-              <Lock className="w-5 h-5 text-amber-500" />
-            </div>
+        <div className="absolute inset-0 flex items-center justify-center bg-background/40 backdrop-blur-[1px] opacity-0 group-hover:opacity-100 transition-opacity">
+          <div className="bg-background/90 rounded-full px-3 py-1.5 shadow-lg flex items-center gap-1.5 text-xs font-medium">
+            {!isPro ? (
+              <>
+                <Lock className="w-3.5 h-3.5 text-amber-500" /> Preview
+              </>
+            ) : (
+              <>
+                <Eye className="w-3.5 h-3.5" /> Preview
+              </>
+            )}
           </div>
-        )}
-      </div>
+        </div>
+      </button>
       <div className="p-4 relative">
         <div className="flex items-center justify-between mb-1">
           <h4 className="font-semibold tracking-tight truncate">{tpl.name}</h4>
@@ -468,22 +488,27 @@ function PremiumCard({
         <p className="text-xs text-muted-foreground line-clamp-2 mb-3 min-h-[2rem]">
           {tpl.description}
         </p>
-        <Button
-          className={cn(
-            "w-full",
-            !isPro &&
-              "bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white"
-          )}
-          onClick={onUse}
-        >
-          {isPro ? (
-            "Use template"
-          ) : (
-            <>
-              <Lock className="w-3.5 h-3.5 mr-1.5" /> Upgrade to use
-            </>
-          )}
-        </Button>
+        <div className="flex gap-2">
+          <Button
+            className={cn(
+              "flex-1",
+              !isPro &&
+                "bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white"
+            )}
+            onClick={onUse}
+          >
+            {isPro ? (
+              "Use template"
+            ) : (
+              <>
+                <Lock className="w-3.5 h-3.5 mr-1.5" /> Upgrade to use
+              </>
+            )}
+          </Button>
+          <Button variant="outline" size="icon" onClick={onPreview} title="Preview">
+            <Eye className="w-4 h-4" />
+          </Button>
+        </div>
       </div>
     </div>
   );
