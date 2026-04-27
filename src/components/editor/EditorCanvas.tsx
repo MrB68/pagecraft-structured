@@ -2,6 +2,11 @@ import { useEffect, useRef } from "react";
 import { Section } from "@/types";
 import { SECTION_MAP, FieldDef } from "@/core/sectionRegistry";
 import { useEditorStore } from "@/store/editorStore";
+import {
+  DeviceContext,
+  flattenResponsiveProps,
+  isVisibleOnDevice,
+} from "@/core/responsive";
 import { Button } from "@/components/ui/button";
 import {
   ArrowDown,
