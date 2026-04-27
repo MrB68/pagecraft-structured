@@ -614,3 +614,67 @@ function TemplateCard({
     </div>
   );
 }
+
+/* ---------- Preview Dialog ---------- */
+
+function PreviewDialog({
+  tpl,
+  isPro,
+  onClose,
+  onUse,
+}: {
+  tpl: Template | null;
+  isPro: boolean;
+  onClose: () => void;
+  onUse: (t: Template) => void;
+}) {
+  return (
+    <Dialog open={!!tpl} onOpenChange={(o) => !o && onClose()}>
+      <DialogContent className="max-w-5xl w-[95vw] p-0 overflow-hidden gap-0">
+        {tpl && (
+          <>
+            <DialogHeader className="px-5 py-4 border-b border-border bg-background">
+              <div className="flex items-start justify-between gap-3">
+                <div className="min-w-0">
+                  <DialogTitle className="flex items-center gap-2 truncate">
+                    {tpl.name}
+                    {tpl.isPremium && (
+                      <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-gradient-to-r from-amber-500 to-amber-600 text-white">
+                        <Crown className="w-3 h-3" /> PREMIUM
+                      </span>
+                    )}
+                  </DialogTitle>
+                  <DialogDescription className="line-clamp-1">
+                    {tpl.category} · {tpl.description}
+                  </DialogDescription>
+                </div>
+                <Button
+                  size="sm"
+                  className={cn(
+                    "shrink-0",
+                    tpl.isPremium && !isPro &&
+                      "bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white"
+                  )}
+                  onClick={() => onUse(tpl)}
+                >
+                  {tpl.isPremium && !isPro ? (
+                    <>
+                      <Lock className="w-3.5 h-3.5 mr-1.5" /> Upgrade to use
+                    </>
+                  ) : (
+                    "Use template"
+                  )}
+                </Button>
+              </div>
+            </DialogHeader>
+            <div className="bg-surface max-h-[75vh] overflow-y-auto">
+              <div className="bg-background mx-auto animate-fade-in">
+                <Renderer sections={tpl.pages[0]?.sections ?? []} />
+              </div>
+            </div>
+          </>
+        )}
+      </DialogContent>
+    </Dialog>
+  );
+}
