@@ -520,22 +520,29 @@ function TemplateCard({
   tpl,
   isPro,
   onUse,
+  onPreview,
   onDelete,
 }: {
   tpl: Template;
   isPro: boolean;
   onUse: () => void;
+  onPreview: () => void;
   onDelete?: () => void;
 }) {
   const locked = !!tpl.isPremium && !isPro;
   return (
     <div
       className={cn(
-        "group rounded-2xl border bg-card overflow-hidden shadow-elev-sm transition-all duration-300 hover:shadow-elev-md hover:-translate-y-0.5 flex flex-col",
+        "group rounded-2xl border bg-card overflow-hidden shadow-elev-sm transition-all duration-300 hover:shadow-elev-md hover:-translate-y-0.5 flex flex-col animate-fade-in",
         tpl.isPremium ? "border-amber-500/30" : "border-border"
       )}
     >
-      <div className="aspect-[16/10] bg-surface border-b border-border overflow-hidden relative">
+      <button
+        type="button"
+        onClick={onPreview}
+        aria-label={`Preview ${tpl.name}`}
+        className="aspect-[16/10] w-full bg-surface border-b border-border overflow-hidden relative block text-left"
+      >
         <div className="absolute inset-0 origin-top-left scale-[0.32] w-[312%] h-[312%] pointer-events-none select-none transition-transform duration-500 group-hover:scale-[0.34]">
           <Renderer sections={tpl.pages[0].sections.slice(0, 2)} />
         </div>
@@ -544,14 +551,17 @@ function TemplateCard({
             <Crown className="w-3 h-3" /> PREMIUM
           </div>
         )}
-        {locked && (
-          <div className="absolute inset-0 flex items-center justify-center bg-background/30 opacity-0 group-hover:opacity-100 transition-opacity">
-            <div className="bg-background/90 rounded-full p-3 shadow-lg">
-              <Lock className="w-5 h-5 text-amber-500" />
-            </div>
+        <div className="absolute inset-0 flex items-center justify-center bg-background/30 opacity-0 group-hover:opacity-100 transition-opacity">
+          <div className="bg-background/95 rounded-full px-3 py-1.5 shadow-lg flex items-center gap-1.5 text-xs font-medium">
+            {locked ? (
+              <Lock className="w-3.5 h-3.5 text-amber-500" />
+            ) : (
+              <Eye className="w-3.5 h-3.5" />
+            )}
+            Preview
           </div>
-        )}
-      </div>
+        </div>
+      </button>
       <div className="p-5 flex-1 flex flex-col">
         <div className="flex items-center justify-between mb-1 gap-2">
           <h3 className="font-semibold tracking-tight truncate">{tpl.name}</h3>
