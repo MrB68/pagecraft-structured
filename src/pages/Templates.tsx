@@ -26,6 +26,7 @@ import {
   ChevronLeft,
   ChevronRight,
   Crown,
+  Eye,
   Lock,
   Search,
   Sparkles,
@@ -67,6 +68,7 @@ export default function Templates() {
   const [sort, setSort] = useState<SortKey>("newest");
   const [upgradeOpen, setUpgradeOpen] = useState(false);
   const [lockedTpl, setLockedTpl] = useState<Template | null>(null);
+  const [previewTpl, setPreviewTpl] = useState<Template | null>(null);
 
   const all: Template[] = useMemo(
     () => [...BUILTIN_TEMPLATES, ...customTemplates],
