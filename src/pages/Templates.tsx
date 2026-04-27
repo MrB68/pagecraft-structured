@@ -361,6 +361,16 @@ export default function Templates() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <PreviewDialog
+        tpl={previewTpl}
+        isPro={isPro}
+        onClose={() => setPreviewTpl(null)}
+        onUse={(t) => {
+          setPreviewTpl(null);
+          handleUse(t);
+        }}
+      />
     </AppLayout>
   );
 }
