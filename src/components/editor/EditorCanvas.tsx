@@ -2,6 +2,11 @@ import { useEffect, useRef } from "react";
 import { Section } from "@/types";
 import { SECTION_MAP, FieldDef } from "@/core/sectionRegistry";
 import { useEditorStore } from "@/store/editorStore";
+import {
+  DeviceContext,
+  flattenResponsiveProps,
+  isVisibleOnDevice,
+} from "@/core/responsive";
 import { Button } from "@/components/ui/button";
 import {
   ArrowDown,
@@ -225,41 +230,52 @@ export default function EditorCanvas({
   onMove,
   onInlineEdit,
 }: CanvasProps) {
+  const device = useEditorStore((s) => s.device);
   return (
-    <div className="w-full">
-      {sections.map((section) => {
-        const meta = SECTION_MAP[section.type];
-        if (!meta) {
+    <DeviceContext.Provider value={device}>
+      <div className="w-full">
+        {sections.map((section) => {
+          const meta = SECTION_MAP[section.type];
+          if (!meta) {
+            return (
+              <div
+                key={section.id}
+                className="p-6 bg-destructive/10 text-destructive text-sm"
+              >
+                Unknown section type: {section.type}
+              </div>
+            );
+          }
+          const Component = meta.component;
+          const visible = isVisibleOnDevice((section.props as any)?.visibility, device);
+          const flatProps = flattenResponsiveProps(section.props, device);
           return (
-            <div
+            <SectionFrame
               key={section.id}
-              className="p-6 bg-destructive/10 text-destructive text-sm"
+              section={section}
+              onSelect={() => onSelect(section.id)}
+              onDuplicate={() => onDuplicate(section.id)}
+              onDelete={() => onDelete(section.id)}
+              onMove={(dir) => onMove(section.id, dir)}
+              onInlineEdit={(key, value) => onInlineEdit(section.id, key, value)}
             >
-              Unknown section type: {section.type}
-            </div>
+              {visible ? (
+                <Component {...flatProps} />
+              ) : (
+                <div className="p-6 bg-muted/40 border-y border-dashed border-border text-xs text-muted-foreground text-center">
+                  Hidden on {device}
+                </div>
+              )}
+            </SectionFrame>
           );
-        }
-        const Component = meta.component;
-        return (
-          <SectionFrame
-            key={section.id}
-            section={section}
-            onSelect={() => onSelect(section.id)}
-            onDuplicate={() => onDuplicate(section.id)}
-            onDelete={() => onDelete(section.id)}
-            onMove={(dir) => onMove(section.id, dir)}
-            onInlineEdit={(key, value) => onInlineEdit(section.id, key, value)}
-          >
-            <Component {...section.props} />
-          </SectionFrame>
-        );
-      })}
-      {sections.length === 0 && (
-        <div className="p-20 text-center text-muted-foreground">
-          <p className="text-sm">This page has no sections yet.</p>
-          <p className="text-xs mt-1">Drag a section from the left panel to get started.</p>
-        </div>
-      )}
-    </div>
+        })}
+        {sections.length === 0 && (
+          <div className="p-20 text-center text-muted-foreground">
+            <p className="text-sm">This page has no sections yet.</p>
+            <p className="text-xs mt-1">Drag a section from the left panel to get started.</p>
+          </div>
+        )}
+      </div>
+    </DeviceContext.Provider>
   );
 }
